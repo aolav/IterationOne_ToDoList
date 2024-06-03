@@ -1,26 +1,69 @@
 //
 //  ContentView.swift
-//  IterationOne_ToDoList
 //
-//  Created by scholar on 6/20/23.
-//
+
+//** This file contains all the code for the root UI**
 
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
+    
+    @State private var showNewTask = false
+    @Query var toDos: [ToDoItem]
+    @State private var ToDoItems = []
+    @Environment(\.modelContext) var modelContext
+    
+
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+            Spacer()
+            HStack {
+                Text("To Do List")
+                    .font(.system(size: 40))
+                    .fontWeight(.black)
+                
+                Spacer()
+                
+                Button {
+                    withAnimation {
+                        self.showNewTask = true
+                    }
+                } label: {
+                    Text("+")
+                        .font(.title)
+                }
+                
+            }
+            .padding()
+            Spacer()
+            
+            List {
+                ForEach (toDos) { toDoItem in
+                    if toDoItem.isImportant == true {
+                        Text("‼️" + toDoItem.title)
+                    } else {
+                        Text(toDoItem.title)
+                    }
+                }
+                .onDelete(perform: deleteToDo)
+            }
+            .listStyle(.plain)
         }
-        .padding()
+            if showNewTask {
+                NewToDoView(toDoItem: ToDoItem(title: "", isImportant: false), showNewTask: $showNewTask)
+            }
+        }
+        func deleteToDo(at offsets: IndexSet) {
+            for offset in offsets {
+                let toDoItem = toDos[offset]
+                modelContext.delete(toDoItem)
+            }
+        }
     }
+    
+#Preview {
+    ContentView()
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
-}
+
